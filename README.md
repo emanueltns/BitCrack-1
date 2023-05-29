@@ -151,23 +151,37 @@ Build the `cuKeyFinder` project for a CUDA build.
 Note: By default the NVIDIA OpenCL headers are used. You can set the header and library path for
 OpenCL in the `BitCrack.props` property sheet.
 
-### Building in Linux
+### Building on Pop!_OS 22.04 LTS + nVIDIA GPU MX150
 
-Using `make`:
+```bash
+# This script is intended for Debian based distros
+# To be run as root
 
-Build CUDA:
-```
-make BUILD_CUDA=1
-```
+apt install -y nvidia-driver-530 nvidia-dkms-530 nvidia-utils-530 nvidia-cuda-toolkit
 
-Build OpenCL:
-```
-make BUILD_OPENCL=1
-```
+# Downloading cuda sdk
+wget https://developer.download.nvidia.com/compute/cuda/11.5.1/local_installers/cuda_11.5.1_495.29.05_linux.run
 
-Or build both:
-```
-make BUILD_CUDA=1 BUILD_OPENCL=1
+# Check and install only the cuda, without the drivers
+sh cuda_11.5.1_495.29.05_linux.run
+
+# Linking the OpenCL library and libcudart necessary for make tool
+ln -s /usr/local/cuda-11.5/targets/x86_64-linux/lib/libOpenCL.so /usr/lib/libOpenCL.so
+ln -s /usr/local/cuda-11.5/targets/x86_64-linux/lib/libcudart.so.11.0 /usr/lib/libcudart.so.11.0
+
+# Clonning the repo
+git clone https://github.com/psabadac/BitCrack.git
+cd BitCrack
+
+# Run this to determine ccap
+nvidia-smi --query-gpu=compute_cap --format=csv
+
+# Build for MX 150 (for this ccap was 6.1)
+make -B BUILD_CUDA=1 BUILD_OPENCL=1 COMPUTE_CAP=61 NVCC=/usr/local/cuda-11.5/bin/nvcc
+
+# Run the app
+cd bin
+./cuBitCrack
 ```
 
 ### Supporting this project
